@@ -3,1081 +3,508 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CLUBICLES Investor Calculator</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <title>CLUBICLES Investment & Unit Economics Calculator</title>
     <style>
         :root {
-            --primary: #2c3e50;
-            --secondary: #3498db;
-            --accent: #e74c3c;
-            --light: #ecf0f1;
-            --dark: #2c3e50;
-            --success: #2ecc71;
-            --warning: #f39c12;
-            --danger: #e74c3c;
+            --primary-color: #007bff;
+            --secondary-color: #6c757d;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --background-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --border-color: #dee2e6;
         }
-        
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
+
         body {
-            background-color: #f5f7fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--background-color);
             color: #333;
             line-height: 1.6;
         }
-        
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 20px;
-        }
-        
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 20px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-        }
-        
-        h2 {
-            font-size: 1.8rem;
-            margin: 20px 0;
-            color: var(--primary);
-            border-bottom: 2px solid var(--secondary);
-            padding-bottom: 10px;
-        }
-        
-        h3 {
-            font-size: 1.4rem;
-            margin: 15px 0;
-            color: var(--dark);
-        }
-        
-        .card {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            transition: transform 0.3s ease;
-        }
-        
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
-        }
-        
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-        }
-        
-        .input-group {
-            margin-bottom: 15px;
-            position: relative;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 600;
-            color: var(--dark);
-        }
-        
-        input, select {
-            width: 100%;
-            padding: 10px 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-            transition: border 0.3s ease;
-        }
-        
-        input:focus, select:focus {
-            border-color: var(--secondary);
-            outline: none;
-            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
-        }
-        
-        .info-icon {
-            display: inline-block;
-            width: 18px;
-            height: 18px;
-            background-color: var(--secondary);
-            color: white;
-            border-radius: 50%;
-            text-align: center;
-            line-height: 18px;
-            font-size: 12px;
-            margin-left: 5px;
-            cursor: help;
-        }
-        
-        .tooltip {
-            position: absolute;
-            background-color: #333;
-            color: white;
-            padding: 10px;
-            border-radius: 5px;
-            font-size: 14px;
-            width: 300px;
-            z-index: 100;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            margin-bottom: 10px;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s, visibility 0.3s;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        
-        .info-icon:hover + .tooltip {
-            opacity: 1;
-            visibility: visible;
-        }
-        
-        .metric {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .metric:last-child {
-            border-bottom: none;
-        }
-        
-        .metric-name {
-            font-weight: 600;
-        }
-        
-        .metric-value {
-            font-weight: 700;
-            font-size: 1.1rem;
-        }
-        
-        .positive {
-            color: var(--success);
-        }
-        
-        .negative {
-            color: var(--danger);
-        }
-        
-        .chart-container {
-            height: 300px;
-            margin-top: 20px;
-        }
-        
-        .btn {
-            display: inline-block;
-            background: var(--secondary);
-            color: white;
-            padding: 12px 25px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            transition: background 0.3s ease;
-            text-align: center;
-        }
-        
-        .btn:hover {
-            background: #2980b9;
-        }
-        
-        .btn-download {
-            background: var(--success);
-            margin-top: 20px;
-            width: 100%;
-        }
-        
-        .btn-download:hover {
-            background: #27ae60;
-        }
-        
-        .results-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 15px;
-        }
-        
-        .highlight {
-            background-color: #f8f9fa;
-            border-left: 4px solid var(--secondary);
-            padding: 15px;
-        }
-        
-        .section-title {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        
-        .toggle-section {
-            margin-top: 10px;
-            margin-bottom: 15px;
-        }
-        
-        .toggle-btn {
-            background: #f1f1f1;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            color: var(--dark);
-        }
-        
-        .toggle-btn:hover {
-            background: #e1e1e1;
-        }
-        
-        .advanced-inputs {
-            display: none;
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid #eee;
-        }
-        
-        .decision-metric {
-            background-color: #f8f9fa;
+            background-color: var(--card-bg);
+            padding: 30px;
             border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        h2 {
+            color: var(--secondary-color);
+            margin-top: 30px;
+            padding-bottom: 5px;
+            border-bottom: 1px dashed var(--border-color);
+        }
+
+        .input-section, .output-section {
+            margin-bottom: 20px;
+        }
+
+        /* --- Input Grid Styles --- */
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            align-items: center;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+        }
+
+        input[type="number"] {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            width: 90%;
+            font-size: 1em;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        }
+
+        /* --- Table Styles (for Inputs and Outputs) --- */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            text-align: right;
+        }
+
+        th:first-child, td:first-child {
+            text-align: left;
+            font-weight: bold;
+            width: 40%;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        /* --- Output Styles --- */
+        .output-value {
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        .metric-good { color: var(--success-color); }
+        .metric-warn { color: var(--warning-color); }
+        .metric-bad { color: var(--danger-color); }
+
+        /* --- Tooltip Styles --- */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            color: var(--secondary-color);
+            margin-left: 5px;
+            font-weight: normal;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 250px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%; /* Position the tooltip above the text */
+            left: 50%;
+            margin-left: -125px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #555 transparent transparent transparent;
+        }
+
+        /* --- Section Explanations --- */
+        .explanation {
+            background-color: #f8f9fa;
             padding: 15px;
-            margin-bottom: 15px;
-            border-left: 4px solid var(--secondary);
+            border-radius: 4px;
+            margin-top: 15px;
+            font-size: 0.95em;
+            border-left: 4px solid var(--primary-color);
         }
-        
-        .decision-metric.positive {
-            border-left-color: var(--success);
+
+        /* --- Responsive Design --- */
+        @media (max-width: 992px) {
+            .input-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
-        
-        .decision-metric.negative {
-            border-left-color: var(--danger);
-        }
-        
-        .decision-metric.warning {
-            border-left-color: var(--warning);
-        }
-        
-        .market-standard {
-            font-size: 0.85rem;
-            color: #666;
-            margin-top: 5px;
-        }
-        
+
         @media (max-width: 768px) {
-            .grid {
+            .input-grid {
                 grid-template-columns: 1fr;
             }
             
-            h1 {
-                font-size: 2rem;
-            }
-            
-            h2 {
-                font-size: 1.5rem;
+            .container {
+                padding: 15px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>CLUBICLES Investor Calculator</h1>
-            <p>Comprehensive financial analysis for investment decision making</p>
-        </header>
-        
-        <div class="grid">
-            <!-- Input Section -->
-            <div class="card">
-                <h2>Investment Parameters</h2>
-                
-                <div class="input-group">
-                    <label for="investmentAmount">
-                        Investment Amount (₹)
-                        <span class="info-icon">?</span>
-                        <div class="tooltip">
-                            The total amount of money you plan to invest in the business.
-                            <div class="market-standard">Market Standard: ₹1-10 crore for early stage</div>
-                        </div>
-                    </label>
-                    <input type="number" id="investmentAmount" value="5000000" min="0" step="100000">
-                </div>
-                
-                <div class="input-group">
-                    <label for="equityStake">
-                        Equity Stake (%)
-                        <span class="info-icon">?</span>
-                        <div class="tooltip">
-                            The percentage of company ownership you will receive for your investment.
-                            <div class="market-standard">Market Standard: 5-20% for early stage</div>
-                        </div>
-                    </label>
-                    <input type="number" id="equityStake" value="10" min="0" max="100" step="0.1">
-                </div>
-                
-                <div class="input-group">
-                    <label for="preMoneyValuation">
-                        Pre-Money Valuation (₹)
-                        <span class="info-icon">?</span>
-                        <div class="tooltip">
-                            Company valuation before investment. Calculated automatically from investment and equity stake.
-                            <div class="market-standard">Formula: Investment Amount / (Equity Stake / 100)</div>
-                        </div>
-                    </label>
-                    <input type="number" id="preMoneyValuation" value="45000000" min="0" step="100000" readonly>
-                </div>
-                
-                <div class="input-group">
-                    <label for="postMoneyValuation">
-                        Post-Money Valuation (₹)
-                        <span class="info-icon">?</span>
-                        <div class="tooltip">
-                            Company valuation after investment. Calculated automatically.
-                            <div class="market-standard">Formula: Pre-Money Valuation + Investment Amount</div>
-                        </div>
-                    </label>
-                    <input type="number" id="postMoneyValuation" value="50000000" min="0" step="100000" readonly>
-                </div>
-                
-                <div class="input-group">
-                    <label for="numHubs">
-                        Number of Hubs
-                        <span class="info-icon">?</span>
-                        <div class="tooltip">
-                            Total number of CLUBICLES hubs to be established.
-                            <div class="market-standard">Typical expansion: 5-20 hubs in first 2 years</div>
-                        </div>
-                    </label>
-                    <input type="number" id="numHubs" value="5" min="1" step="1">
-                </div>
-                
-                <div class="input-group">
-                    <label for="occupancyRate">
-                        Average Occupancy Rate (%)
-                        <span class="info-icon">?</span>
-                        <div class="tooltip">
-                            The average percentage of capacity utilization across all hubs.
-                            <div class="market-standard">Industry Standard: 70-85% for profitable coworking spaces</div>
-                        </div>
-                    </label>
-                    <input type="number" id="occupancyRate" value="75" min="0" max="100" step="1">
-                </div>
-                
-                <div class="toggle-section">
-                    <button class="toggle-btn" id="toggleAdvanced">Show Advanced Parameters</button>
-                </div>
-                
-                <div class="advanced-inputs" id="advancedInputs">
-                    <div class="input-group">
-                        <label for="monthlyRevenuePerHub">
-                            Average Monthly Revenue per Hub (₹)
-                            <span class="info-icon">?</span>
-                            <div class="tooltip">
-                                Expected average monthly revenue generated by each hub.
-                                <div class="market-standard">Market Range: ₹1-3 lakh per month for medium-sized hubs</div>
-                            </div>
-                        </label>
-                        <input type="number" id="monthlyRevenuePerHub" value="150000" min="0" step="10000">
-                    </div>
-                    
-                    <div class="input-group">
-                        <label for="revenueShare">
-                            CLUBICLES Revenue Share (%)
-                            <span class="info-icon">?</span>
-                            <div class="tooltip">
-                                Percentage of hub revenue that goes to CLUBICLES.
-                                <div class="market-standard">Franchise Model: 15-25%</div>
-                            </div>
-                        </label>
-                        <input type="number" id="revenueShare" value="20" min="0" max="100" step="1">
-                    </div>
-                    
-                    <div class="input-group">
-                        <label for="monthlyOpCost">
-                            Monthly Operational Cost per Hub (₹)
-                            <span class="info-icon">?</span>
-                            <div class="tooltip">
-                                Monthly operating expenses for each hub (staff, utilities, maintenance).
-                                <div class="market-standard">Typical: ₹40,000-80,000 per hub</div>
-                            </div>
-                        </label>
-                        <input type="number" id="monthlyOpCost" value="50000" min="0" step="5000">
-                    </div>
-                    
-                    <div class="input-group">
-                        <label for="setupCost">
-                            Setup Cost per Hub (₹)
-                            <span class="info-icon">?</span>
-                            <div class="tooltip">
-                                One-time cost to establish each hub (renovation, equipment, etc.).
-                                <div class="market-standard">Range: ₹3-8 lakh depending on location and size</div>
-                            </div>
-                        </label>
-                        <input type="number" id="setupCost" value="500000" min="0" step="50000">
-                    </div>
-                    
-                    <div class="input-group">
-                        <label for="customerAcquisitionCost">
-                            Customer Acquisition Cost (₹)
-                            <span class="info-icon">?</span>
-                            <div class="tooltip">
-                                Average cost to acquire a new customer.
-                                <div class="market-standard">Coworking Industry: ₹2,000-5,000 per customer</div>
-                            </div>
-                        </label>
-                        <input type="number" id="customerAcquisitionCost" value="3000" min="0" step="500">
-                    </div>
-                    
-                    <div class="input-group">
-                        <label for="customerLifetime">
-                            Customer Lifetime (months)
-                            <span class="info-icon">?</span>
-                            <div class="tooltip">
-                                Average duration a customer stays with the service.
-                                <div class="market-standard">Coworking: 12-24 months</div>
-                            </div>
-                        </label>
-                        <input type="number" id="customerLifetime" value="18" min="1" step="1">
-                    </div>
-                    
-                    <div class="input-group">
-                        <label for="churnRate">
-                            Monthly Churn Rate (%)
-                            <span class="info-icon">?</span>
-                            <div class="tooltip">
-                                Percentage of customers who cancel their membership each month.
-                                <div class="market-standard">Industry: 5-10% monthly</div>
-                            </div>
-                        </label>
-                        <input type="number" id="churnRate" value="6" min="0" max="100" step="0.5">
-                    </div>
-                    
-                    <div class="input-group">
-                        <label for="growthRate">
-                            Monthly Growth Rate (%)
-                            <span class="info-icon">?</span>
-                            <div class="tooltip">
-                                Expected monthly growth in customer base.
-                                <div class="market-standard">Early Stage: 5-15% monthly</div>
-                            </div>
-                        </label>
-                        <input type="number" id="growthRate" value="8" min="0" max="100" step="0.5">
-                    </div>
-                </div>
-                
-                <div class="input-group">
-                    <label for="exitYear">
-                        Exit Year
-                        <span class="info-icon">?</span>
-                        <div class="tooltip">
-                            Number of years until you plan to exit the investment.
-                            <div class="market-standard">VC Timeline: 5-7 years</div>
-                        </div>
-                    </label>
-                    <input type="number" id="exitYear" value="5" min="1" step="1">
-                </div>
-                
-                <div class="input-group">
-                    <label for="exitMultiple">
-                        Exit Multiple
-                        <span class="info-icon">?</span>
-                        <div class="tooltip">
-                            Expected multiple of revenue or profit at exit (e.g., 5x means 5 times current valuation).
-                            <div class="market-standard">SaaS/Coworking: 5-10x revenue</div>
-                        </div>
-                    </label>
-                    <input type="number" id="exitMultiple" value="8" min="1" step="0.5">
-                </div>
-            </div>
-            
-            <!-- Results Section -->
-            <div class="card">
-                <h2>Investment Returns</h2>
-                
-                <div class="results-grid">
-                    <div class="metric">
-                        <span class="metric-name">Pre-Money Valuation:</span>
-                        <span class="metric-value" id="preMoneyValDisplay">₹45,000,000</span>
-                    </div>
-                    
-                    <div class="metric">
-                        <span class="metric-name">Post-Money Valuation:</span>
-                        <span class="metric-value" id="postMoneyValDisplay">₹50,000,000</span>
-                    </div>
-                    
-                    <div class="metric">
-                        <span class="metric-name">Monthly Revenue (CLUBICLES):</span>
-                        <span class="metric-value" id="monthlyRevenue">₹150,000</span>
-                    </div>
-                    
-                    <div class="metric">
-                        <span class="metric-name">Monthly Profit (CLUBICLES):</span>
-                        <span class="metric-value positive" id="monthlyProfit">₹50,000</span>
-                    </div>
-                    
-                    <div class="metric">
-                        <span class="metric-name">Annual Profit (CLUBICLES):</span>
-                        <span class="metric-value positive" id="annualProfit">₹600,000</span>
-                    </div>
-                    
-                    <div class="metric">
-                        <span class="metric-name">Annual ROI:</span>
-                        <span class="metric-value positive" id="annualROI">12.0%</span>
-                    </div>
-                    
-                    <div class="metric">
-                        <span class="metric-name">Break-even Period:</span>
-                        <span class="metric-value" id="breakEven">4.2 years</span>
-                    </div>
-                    
-                    <div class="metric">
-                        <span class="metric-name">Exit Value of Your Stake:</span>
-                        <span class="metric-value positive" id="exitValue">₹40,000,000</span>
-                    </div>
-                    
-                    <div class="metric">
-                        <span class="metric-name">Multiple on Investment:</span>
-                        <span class="metric-value positive" id="multiple">8.0x</span>
-                    </div>
-                </div>
-                
-                <div class="chart-container">
-                    <canvas id="returnsChart"></canvas>
-                </div>
-            </div>
+
+<div class="container">
+    <h1>CLUBICLES Investment & Unit Economics Calculator</h1>
+    
+    <h2>Step 2: Hub Distribution & Revenue Share (%)</h2>
+    <table id="model-inputs">
+        <thead>
+            <tr>
+                <th>Model</th>
+                <th>Num Hubs (Target)</th>
+                <th>Revenue Share (%) <span class="tooltip">(?)<span class="tooltiptext">The percentage of total hub revenue retained by CLUBICLES (for Operations and Support models).</span></span></th>
+                <th>Monthly Revenue per Hub (₹) <span class="tooltip">(?)<span class="tooltiptext">The total expected monthly revenue generated by a single hub at full capacity.</span></span></th>
+                <th>Monthly Opex per Hub (₹) <span class="tooltip">(?)<span class="tooltiptext">The monthly Operating Expenses (salaries, rent, utilities) for a single hub.</span></span></th>
+                <th>Setup Cost per Hub (₹) <span class="tooltip">(?)<span class="tooltiptext">The one-time cost to make the hub operational (e.g., equipment, initial build-out).</span></span></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr data-model="full">
+                <td>Full CLUBICLES (100% Share)</td>
+                <td><input type="number" id="full-numHubs" value="2" min="0" oninput="calculateMetrics()"></td>
+                <td>100</td>
+                <td><input type="number" id="full-monthlyRevenue" value="320000" min="0" oninput="calculateMetrics()"></td>
+                <td><input type="number" id="full-monthlyOpCost" value="180000" min="0" oninput="calculateMetrics()"></td>
+                <td><input type="number" id="full-setupCost" value="1500000" min="0" oninput="calculateMetrics()"></td>
+            </tr>
+            <tr data-model="ops">
+                <td>CLUBICLES Operations</td>
+                <td><input type="number" id="ops-numHubs" value="5" min="0" oninput="calculateMetrics()"></td>
+                <td><input type="number" id="ops-revenueShare" value="70" min="0" max="100" oninput="calculateMetrics()"></td>
+                <td><input type="number" id="ops-monthlyRevenue" value="280000" min="0" oninput="calculateMetrics()"></td>
+                <td><input type="number" id="ops-monthlyOpCost" value="100000" min="0" oninput="calculateMetrics()"></td>
+                <td><input type="number" id="ops-setupCost" value="500000" min="0" oninput="calculateMetrics()"></td>
+            </tr>
+            <tr data-model="support">
+                <td>CLUBICLES Support</td>
+                <td><input type="number" id="support-numHubs" value="10" min="0" oninput="calculateMetrics()"></td>
+                <td><input type="number" id="support-revenueShare" value="10" min="0" max="100" oninput="calculateMetrics()"></td>
+                <td><input type="number" id="support-monthlyRevenue" value="250000" min="0" oninput="calculateMetrics()"></td>
+                <td><input type="number" id="support-monthlyOpCost" value="70000" min="0" oninput="calculateMetrics()"></td>
+                <td><input type="number" id="support-setupCost" value="200000" min="0" oninput="calculateMetrics()"></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>Step 3: Growth & Customer Economics</h2>
+    <div class="input-grid">
+        <div class="input-group">
+            <label for="avg-occupancy">Average Occupancy Rate (%) <span class="tooltip">(?)<span class="tooltiptext">Average capacity utilized across all hubs.</span></span></label>
+            <input type="number" id="avg-occupancy" value="75" min="0" max="100" oninput="calculateMetrics()">
         </div>
-        
-        <!-- Decision Metrics Section -->
-        <div class="card">
-            <h2>Key Decision Metrics</h2>
-            
-            <div class="decision-metric positive" id="ltvCacMetric">
-                <h3>LTV to CAC Ratio</h3>
-                <div class="metric">
-                    <span class="metric-name">Ratio:</span>
-                    <span class="metric-value positive" id="ltvCac">5.0</span>
-                </div>
-                <p>This measures customer profitability. A ratio above 3 is considered healthy.</p>
-            </div>
-            
-            <div class="decision-metric positive" id="paybackPeriodMetric">
-                <h3>CAC Payback Period</h3>
-                <div class="metric">
-                    <span class="metric-name">Months:</span>
-                    <span class="metric-value positive" id="cacPayback">10.2</span>
-                </div>
-                <p>Time to recover customer acquisition costs. Under 12 months is good for SaaS/coworking.</p>
-            </div>
-            
-            <div class="decision-metric positive" id="ruleOf40Metric">
-                <h3>Rule of 40</h3>
-                <div class="metric">
-                    <span class="metric-name">Score:</span>
-                    <span class="metric-value positive" id="ruleOf40">42%</span>
-                </div>
-                <p>Growth rate + Profit Margin. Above 40% indicates a healthy SaaS business.</p>
-            </div>
-            
-            <div class="decision-metric positive" id="grossMarginMetric">
-                <h3>Gross Margin</h3>
-                <div class="metric">
-                    <span class="metric-name">Percentage:</span>
-                    <span class="metric-value positive" id="grossMargin">65%</span>
-                </div>
-                <p>Measures operational efficiency. Above 60% is good for tech-enabled services.</p>
-            </div>
+        <div class="input-group">
+            <label for="monthly-growth">Monthly Growth Rate (%) <span class="tooltip">(?)<span class="tooltiptext">Expected Month-over-Month (MoM) revenue growth.</span></span></label>
+            <input type="number" id="monthly-growth" value="8" min="0" oninput="calculateMetrics()">
         </div>
-        
-        <!-- Additional Metrics Section -->
-        <div class="card">
-            <h2>Additional Financial Metrics</h2>
-            
-            <div class="grid">
-                <div>
-                    <h3>Profitability Metrics</h3>
-                    
-                    <div class="metric">
-                        <span class="metric-name">Gross Profit:</span>
-                        <span class="metric-value positive" id="grossProfit">₹125,000</span>
-                    </div>
-                    
-                    <div class="metric">
-                        <span class="metric-name">EBITDA:</span>
-                        <span class="metric-value positive" id="ebitda">₹100,000</span>
-                    </div>
-                    
-                    <div class="metric">
-                        <span class="metric-name">Return on Equity:</span>
-                        <span class="metric-value positive" id="roe">15.0%</span>
-                    </div>
-                    
-                    <div class="metric">
-                        <span class="metric-name">1% Equity Appreciation:</span>
-                        <span class="metric-value positive" id="equityAppreciation">₹400,000</span>
-                    </div>
-                </div>
-                
-                <div>
-                    <h3>Efficiency Metrics</h3>
-                    
-                    <div class="metric">
-                        <span class="metric-name">Customer LTV:</span>
-                        <span class="metric-value" id="ltv">₹12,500</span>
-                    </div>
-                    
-                    <div class="metric">
-                        <span class="metric-name">CAC:</span>
-                        <span class="metric-value" id="cac">₹2,500</span>
-                    </div>
-                    
-                    <div class="metric">
-                        <span class="metric-name">Monthly Recurring Revenue:</span>
-                        <span class="metric-value" id="mrr">₹150,000</span>
-                    </div>
-                    
-                    <div class="metric">
-                        <span class="metric-name">Net Dollar Retention:</span>
-                        <span class="metric-value positive" id="ndr">105%</span>
-                    </div>
-                </div>
-                
-                <div>
-                    <h3>Financial Health</h3>
-                    
-                    <div class="metric">
-                        <span class="metric-name">Free Cash Flow:</span>
-                        <span class="metric-value positive" id="fcf">₹80,000</span>
-                    </div>
-                    
-                    <div class="metric">
-                        <span class="metric-name">Quick Ratio:</span>
-                        <span class="metric-value positive" id="quickRatio">1.8</span>
-                    </div>
-                    
-                    <div class="metric">
-                        <span class="metric-name">Burn Rate:</span>
-                        <span class="metric-value negative" id="burnRate">-₹50,000</span>
-                    </div>
-                    
-                    <div class="metric">
-                        <span class="metric-name">Runway (months):</span>
-                        <span class="metric-value" id="runway">24</span>
-                    </div>
-                </div>
-            </div>
+        <div class="input-group">
+            <label for="monthly-churn">Monthly Churn Rate (%) <span class="tooltip">(?)<span class="tooltiptext">Percentage of customers lost each month. Used to determine Customer Lifetime.</span></span></label>
+            <input type="number" id="monthly-churn" value="6" min="0" oninput="calculateMetrics()">
         </div>
-        
-        <button class="btn btn-download" id="downloadBtn">Download to Excel</button>
+        <div class="input-group">
+            <label for="cac">Customer Acquisition Cost (CAC - ₹) <span class="tooltip">(?)<span class="tooltiptext">The average cost to acquire one paying customer.</span></span></label>
+            <input type="number" id="cac" value="3000" min="0" oninput="calculateMetrics()">
+        </div>
     </div>
 
-    <script>
-        // DOM Elements
-        const inputs = {
-            investmentAmount: document.getElementById('investmentAmount'),
-            equityStake: document.getElementById('equityStake'),
-            preMoneyValuation: document.getElementById('preMoneyValuation'),
-            postMoneyValuation: document.getElementById('postMoneyValuation'),
-            numHubs: document.getElementById('numHubs'),
-            occupancyRate: document.getElementById('occupancyRate'),
-            monthlyRevenuePerHub: document.getElementById('monthlyRevenuePerHub'),
-            revenueShare: document.getElementById('revenueShare'),
-            monthlyOpCost: document.getElementById('monthlyOpCost'),
-            setupCost: document.getElementById('setupCost'),
-            customerAcquisitionCost: document.getElementById('customerAcquisitionCost'),
-            customerLifetime: document.getElementById('customerLifetime'),
-            churnRate: document.getElementById('churnRate'),
-            growthRate: document.getElementById('growthRate'),
-            exitYear: document.getElementById('exitYear'),
-            exitMultiple: document.getElementById('exitMultiple')
-        };
-        
-        const outputs = {
-            preMoneyValDisplay: document.getElementById('preMoneyValDisplay'),
-            postMoneyValDisplay: document.getElementById('postMoneyValDisplay'),
-            monthlyRevenue: document.getElementById('monthlyRevenue'),
-            monthlyProfit: document.getElementById('monthlyProfit'),
-            annualProfit: document.getElementById('annualProfit'),
-            annualROI: document.getElementById('annualROI'),
-            breakEven: document.getElementById('breakEven'),
-            exitValue: document.getElementById('exitValue'),
-            multiple: document.getElementById('multiple'),
-            grossProfit: document.getElementById('grossProfit'),
-            ebitda: document.getElementById('ebitda'),
-            roe: document.getElementById('roe'),
-            equityAppreciation: document.getElementById('equityAppreciation'),
-            ltv: document.getElementById('ltv'),
-            cac: document.getElementById('cac'),
-            ltvCac: document.getElementById('ltvCac'),
-            mrr: document.getElementById('mrr'),
-            ndr: document.getElementById('ndr'),
-            fcf: document.getElementById('fcf'),
-            quickRatio: document.getElementById('quickRatio'),
-            burnRate: document.getElementById('burnRate'),
-            runway: document.getElementById('runway'),
-            ruleOf40: document.getElementById('ruleOf40'),
-            grossMargin: document.getElementById('grossMargin'),
-            cacPayback: document.getElementById('cacPayback')
-        };
-        
-        const decisionMetrics = {
-            ltvCacMetric: document.getElementById('ltvCacMetric'),
-            paybackPeriodMetric: document.getElementById('paybackPeriodMetric'),
-            ruleOf40Metric: document.getElementById('ruleOf40Metric'),
-            grossMarginMetric: document.getElementById('grossMarginMetric')
-        };
-        
-        const toggleBtn = document.getElementById('toggleAdvanced');
-        const advancedInputs = document.getElementById('advancedInputs');
-        const downloadBtn = document.getElementById('downloadBtn');
-        
-        // Chart
-        let returnsChart;
-        
-        // Format currency
-        function formatCurrency(amount) {
-            return '₹' + amount.toLocaleString('en-IN');
-        }
-        
-        // Format percentage
-        function formatPercentage(value) {
-            return value.toFixed(1) + '%';
-        }
-        
-        // Toggle advanced inputs
-        let advancedVisible = false;
-        toggleBtn.addEventListener('click', function() {
-            advancedVisible = !advancedVisible;
-            advancedInputs.style.display = advancedVisible ? 'block' : 'none';
-            toggleBtn.textContent = advancedVisible ? 'Hide Advanced Parameters' : 'Show Advanced Parameters';
+    <h2>Step 4: Key Financial Metrics & Health</h2>
+    <table id="financial-metrics">
+        <thead>
+            <tr>
+                <th>Metric</th>
+                <th>Value</th>
+                <th>Threshold</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>LTV to CAC Ratio <span class="tooltip">(?)<span class="tooltiptext">Formula: Customer Lifetime Value / CAC. A measure of customer profitability. Ideal: > 3.0</span></span></td>
+                <td id="ltv-cac-ratio" class="output-value metric-bad"></td>
+                <td>> 3.0 is Healthy</td>
+            </tr>
+            <tr>
+                <td>CAC Payback Period (Months) <span class="tooltip">(?)<span class="tooltiptext">Formula: CAC / (Monthly Net Revenue per Customer). Time to recover acquisition cost. Ideal: < 12 Months</span></span></td>
+                <td id="cac-payback-period" class="output-value metric-bad"></td>
+                <td>< 12 Months is Good</td>
+            </tr>
+            <tr>
+                <td>Rule of 40 Score (%) <span class="tooltip">(?)<span class="tooltiptext">Formula: Monthly Growth % + Gross Margin %. A balance of growth and profitability. Ideal: > 40%</span></span></td>
+                <td id="rule-of-40" class="output-value metric-bad"></td>
+                <td>> 40% is Healthy</td>
+            </tr>
+            <tr>
+                <td>Total Gross Margin (%) <span class="tooltip">(?)<span class="tooltiptext">Formula: (Total Revenue - Total COGS) / Total Revenue. Measures operational efficiency. Ideal: > 60%</span></span></td>
+                <td id="gross-margin" class="output-value metric-bad"></td>
+                <td>> 60% is Good</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>Step 5: Revenue & Cost Summary</h2>
+    <table>
+        <tr>
+            <td>Total Monthly Revenue (₹)</td>
+            <td id="total-revenue" class="output-value"></td>
+        </tr>
+        <tr>
+            <td>Total Monthly Operating Cost (₹)</td>
+            <td id="total-opex" class="output-value"></td>
+        </tr>
+        <tr>
+            <td>Total Initial Setup Cost (₹)</td>
+            <td id="total-setup-cost" class="output-value"></td>
+        </tr>
+        <tr>
+            <td>Net Monthly Profit (EBITDA) (₹)</td>
+            <td id="net-profit" class="output-value"></td>
+        </tr>
+        <tr>
+            <td>Calculated Customer Lifetime (Months)</td>
+            <td id="customer-lifetime" class="output-value"></td>
+        </tr>
+    </table>
+
+    <h2>Step 1: Investment & Valuation Outputs</h2>
+    <div class="input-grid">
+        <div class="input-group">
+            <label for="investment-amount">Investment Amount (₹) <span class="tooltip">(?)<span class="tooltiptext">Total capital you are raising from investors.</span></span></label>
+            <input type="number" id="investment-amount" value="5000000" min="0" oninput="updateValuation()">
+        </div>
+        <div class="input-group">
+            <label for="equity-stake">Equity Stake (%) <span class="tooltip">(?)<span class="tooltiptext">The percentage of the company being offered to the investor.</span></span></label>
+            <input type="number" id="equity-stake" value="10" min="0" max="100" oninput="updateValuation()">
+        </div>
+        <div class="input-group">
+            <label for="exit-multiple">Exit Multiple (on Revenue) <span class="tooltip">(?)<span class="tooltiptext">The projected valuation multiple at the time of investor exit (e.g., 8x revenue).</span></span></label>
+            <input type="number" id="exit-multiple" value="8" min="0" oninput="updateValuation()">
+        </div>
+        <div class="input-group">
+            <label for="exit-year">Exit Year <span class="tooltip">(?)<span class="tooltiptext">The expected year for the investment exit (usually 5-7 years).</span></span></label>
+            <input type="number" id="exit-year" value="5" min="1" oninput="updateValuation()">
+        </div>
+    </div>
+    
+    <table>
+        <tr>
+            <td>Post-Money Valuation (₹) <span class="tooltip">(?)<span class="tooltiptext">Formula: Investment / (Equity Stake / 100)</span></span></td>
+            <td id="post-money-valuation" class="output-value"></td>
+        </tr>
+        <tr>
+            <td>**Projected Exit Revenue (₹, Year 5)**</td>
+            <td id="projected-exit-revenue" class="output-value"></td>
+        </tr>
+        <tr>
+            <td>**Investor Exit Value (₹)** <span class="tooltip">(?)<span class="tooltiptext">Formula: Projected Exit Revenue * Exit Multiple * Investor Equity %</span></span></td>
+            <td id="investor-exit-value" class="output-value"></td>
+        </tr>
+        <tr>
+            <td>**Multiple on Investment (x)** <span class="tooltip">(?)<span class="tooltiptext">Formula: Investor Exit Value / Initial Investment Amount</span></span></td>
+            <td id="multiple-on-investment" class="output-value"></td>
+        </tr>
+    </table>
+
+    <div class="explanation">
+        <h3>Valuation Assumptions Explained</h3>
+        <p><strong>Post-Money Valuation:</strong> This is the company's valuation after receiving the investment. It's calculated as: Investment Amount / (Equity Stake / 100).</p>
+        <p><strong>Pre-Money Valuation:</strong> This is the company's valuation before the investment. It's calculated as: Post-Money Valuation - Investment Amount.</p>
+        <p><strong>Projected Exit Revenue:</strong> This estimates future revenue based on current monthly revenue compounded at the monthly growth rate over the exit period.</p>
+        <p><strong>Investor Exit Value:</strong> The estimated return for the investor at exit, calculated as: Projected Exit Revenue × Exit Multiple × Investor Equity %.</p>
+        <p><strong>Multiple on Investment:</strong> How many times the investor's money will multiply by the exit year.</p>
+    </div>
+
+</div>
+
+<script>
+    // Helper function to format numbers as Indian currency
+    const formatRupee = (num) => {
+        if (num === null || isNaN(num)) return '₹ 0';
+        return '₹ ' + Math.round(num).toLocaleString('en-IN');
+    };
+
+    // --- Core Calculation Functions ---
+
+    function calculateMetrics() {
+        // --- Input Parsing ---
+        const models = ['full', 'ops', 'support'];
+        let totalMonthlyRevenue = 0;
+        let totalMonthlyOpex = 0;
+        let totalInitialSetupCost = 0;
+
+        // Model-Specific Calculations
+        models.forEach(model => {
+            const numHubs = parseFloat(document.getElementById(`${model}-numHubs`).value) || 0;
+            const revenueShare = (model === 'full' ? 100 : parseFloat(document.getElementById(`${model}-revenueShare`).value)) / 100 || 0;
+            const monthlyRevenue = parseFloat(document.getElementById(`${model}-monthlyRevenue`).value) || 0;
+            const monthlyOpCost = parseFloat(document.getElementById(`${model}-monthlyOpCost`).value) || 0;
+            const setupCost = parseFloat(document.getElementById(`${model}-setupCost`).value) || 0;
+
+            // CLUBICLES Revenue & Opex (Based on Share)
+            const clubiclesRevenue = monthlyRevenue * revenueShare;
+            const clubiclesOpex = monthlyOpCost * (model === 'full' ? 1 : revenueShare); // Assume Opex scales with revenue share or is 100% for full model
+
+            totalMonthlyRevenue += clubiclesRevenue * numHubs;
+            totalMonthlyOpex += clubiclesOpex * numHubs; // Total opex is for the entire hub
+            totalInitialSetupCost += setupCost * numHubs;
         });
+
+        // Global Metrics
+        const avgOccupancy = (parseFloat(document.getElementById('avg-occupancy').value) / 100) || 0;
+        const monthlyGrowth = (parseFloat(document.getElementById('monthly-growth').value) / 100) || 0;
+        const monthlyChurn = (parseFloat(document.getElementById('monthly-churn').value) / 100) || 0;
+        const cac = parseFloat(document.getElementById('cac').value) || 0;
         
-        // Update valuation based on investment and equity
-        function updateValuation() {
-            const investmentAmount = parseFloat(inputs.investmentAmount.value) || 0;
-            const equityStake = parseFloat(inputs.equityStake.value) || 0;
-            
-            if (equityStake > 0) {
-                const preMoneyVal = investmentAmount / (equityStake / 100) - investmentAmount;
-                const postMoneyVal = preMoneyVal + investmentAmount;
-                
-                inputs.preMoneyValuation.value = preMoneyVal;
-                inputs.postMoneyValuation.value = postMoneyVal;
-                
-                outputs.preMoneyValDisplay.textContent = formatCurrency(preMoneyVal);
-                outputs.postMoneyValDisplay.textContent = formatCurrency(postMoneyVal);
-            }
+        // --- Step 5: Revenue & Cost Summary ---
+        const effectiveTotalRevenue = totalMonthlyRevenue * avgOccupancy;
+        const netProfit = effectiveTotalRevenue - totalMonthlyOpex;
+
+        document.getElementById('total-revenue').textContent = formatRupee(effectiveTotalRevenue);
+        document.getElementById('total-opex').textContent = formatRupee(totalMonthlyOpex);
+        document.getElementById('total-setup-cost').textContent = formatRupee(totalInitialSetupCost);
+        document.getElementById('net-profit').textContent = formatRupee(netProfit);
+
+        // --- Step 4: Key Financial Metrics ---
+
+        // 1. Customer Lifetime (L)
+        const customerLifetimeMonths = monthlyChurn > 0 ? 1 / monthlyChurn : 0;
+        document.getElementById('customer-lifetime').textContent = Math.round(customerLifetimeMonths) + ' months';
+
+        // 2. Gross Margin (%)
+        const totalCOGS = totalMonthlyOpex; // COGS approximated by Opex for service business
+        const grossProfit = effectiveTotalRevenue - totalCOGS;
+        const grossMargin = effectiveTotalRevenue > 0 ? (grossProfit / effectiveTotalRevenue) * 100 : 0;
+        
+        document.getElementById('gross-margin').textContent = grossMargin.toFixed(1) + '%';
+        
+        // 3. Rule of 40 (%)
+        const ruleOf40 = (monthlyGrowth * 100) + grossMargin;
+        document.getElementById('rule-of-40').textContent = ruleOf40.toFixed(1) + '%';
+        
+        // NOTE: We need a reasonable approximation for LTV (LTV/CAC and CAC Payback)
+        // LTV = (Avg Revenue per Month * Gross Margin %) * Customer Lifetime (Months)
+        // For simplicity, we assume an average revenue of ₹10,000 per customer for the total revenue calculation.
+        const avgRevPerCustomer = 10000; 
+        const avgNetRevPerCustomer = avgRevPerCustomer * (grossMargin/100);
+
+        // LTV (Lifetime Value)
+        const ltv = avgNetRevPerCustomer * customerLifetimeMonths;
+
+        // LTV/CAC Ratio
+        const ltvCacRatio = cac > 0 ? ltv / cac : 0;
+        document.getElementById('ltv-cac-ratio').textContent = ltvCacRatio.toFixed(1) + 'x';
+        
+        // CAC Payback Period (Months)
+        const cacPaybackPeriod = avgNetRevPerCustomer > 0 ? cac / avgNetRevPerCustomer : 0;
+        document.getElementById('cac-payback-period').textContent = cacPaybackPeriod.toFixed(1);
+
+        // Apply health coloring
+        document.getElementById('ltv-cac-ratio').className = (ltvCacRatio >= 3.0) ? 'output-value metric-good' : (ltvCacRatio >= 1.5 ? 'output-value metric-warn' : 'output-value metric-bad');
+        document.getElementById('cac-payback-period').className = (cacPaybackPeriod <= 12 && cacPaybackPeriod > 0) ? 'output-value metric-good' : (cacPaybackPeriod <= 18 ? 'output-value metric-warn' : 'output-value metric-bad');
+        document.getElementById('rule-of-40').className = (ruleOf40 >= 40) ? 'output-value metric-good' : (ruleOf40 >= 25 ? 'output-value metric-warn' : 'output-value metric-bad');
+        document.getElementById('gross-margin').className = (grossMargin >= 60) ? 'output-value metric-good' : (grossMargin >= 40 ? 'output-value metric-warn' : 'output-value metric-bad');
+
+        // Call valuation function to update dependent outputs
+        updateValuation(effectiveTotalRevenue, monthlyGrowth);
+    }
+
+    function updateValuation(currentRevenue, monthlyGrowth) {
+        // --- Input Parsing ---
+        const investmentAmount = parseFloat(document.getElementById('investment-amount').value) || 0;
+        const equityStake = parseFloat(document.getElementById('equity-stake').value) / 100 || 0;
+        const exitMultiple = parseFloat(document.getElementById('exit-multiple').value) || 0;
+        const exitYear = parseFloat(document.getElementById('exit-year').value) || 5;
+
+        // Get revenue from Step 5, if not passed (for initial load)
+        if (!currentRevenue) {
+            calculateMetrics();
+            return; // Exit and let the recursive call handle it
         }
         
-        // Calculate all metrics
-        function calculateMetrics() {
-            // Update valuation first
-            updateValuation();
-            
-            // Get input values
-            const investmentAmount = parseFloat(inputs.investmentAmount.value) || 0;
-            const equityStake = parseFloat(inputs.equityStake.value) || 0;
-            const preMoneyVal = parseFloat(inputs.preMoneyValuation.value) || 0;
-            const postMoneyVal = parseFloat(inputs.postMoneyValuation.value) || 0;
-            const numHubs = parseFloat(inputs.numHubs.value) || 0;
-            const occupancyRate = parseFloat(inputs.occupancyRate.value) || 0;
-            const monthlyRevenuePerHub = parseFloat(inputs.monthlyRevenuePerHub.value) || 0;
-            const revenueShare = parseFloat(inputs.revenueShare.value) || 0;
-            const monthlyOpCost = parseFloat(inputs.monthlyOpCost.value) || 0;
-            const setupCost = parseFloat(inputs.setupCost.value) || 0;
-            const customerAcquisitionCost = parseFloat(inputs.customerAcquisitionCost.value) || 0;
-            const customerLifetime = parseFloat(inputs.customerLifetime.value) || 0;
-            const churnRate = parseFloat(inputs.churnRate.value) || 0;
-            const growthRate = parseFloat(inputs.growthRate.value) || 0;
-            const exitYear = parseFloat(inputs.exitYear.value) || 0;
-            const exitMultiple = parseFloat(inputs.exitMultiple.value) || 0;
-            
-            // Calculate key metrics
-            const totalMonthlyRevenue = numHubs * monthlyRevenuePerHub * (occupancyRate / 100);
-            const clubliclesMonthlyRevenue = totalMonthlyRevenue * (revenueShare / 100);
-            const totalMonthlyOpCost = numHubs * monthlyOpCost;
-            const clubliclesMonthlyProfit = clubliclesMonthlyRevenue - totalMonthlyOpCost;
-            const clubliclesAnnualProfit = clubliclesMonthlyProfit * 12;
-            const annualROI = (clubliclesAnnualProfit / investmentAmount) * 100;
-            const breakEvenYears = investmentAmount / clubliclesAnnualProfit;
-            const exitValuation = postMoneyVal * exitMultiple;
-            const exitStakeValue = exitValuation * (equityStake / 100);
-            const multipleOnInvestment = exitStakeValue / investmentAmount;
-            
-            // Calculate additional metrics
-            const grossProfit = clubliclesMonthlyRevenue - (totalMonthlyOpCost * 0.7); // Assuming 30% of op cost is COGS
-            const grossMargin = (grossProfit / clubliclesMonthlyRevenue) * 100;
-            const ebitda = clubliclesMonthlyProfit * 0.9; // Assuming 10% depreciation/amortization
-            const roe = (clubliclesAnnualProfit / investmentAmount) * 100;
-            const equityAppreciation = (exitValuation * 0.01) - (postMoneyVal * 0.01);
-            
-            // Customer metrics
-            const avgCustomersPerHub = 50; // Assumption
-            const totalCustomers = numHubs * avgCustomersPerHub * (occupancyRate / 100);
-            const ltv = (monthlyRevenuePerHub * 12 * (customerLifetime / 12)) / avgCustomersPerHub;
-            const cac = customerAcquisitionCost;
-            const ltvCacRatio = ltv / cac;
-            const cacPayback = cac / (ltv / customerLifetime);
-            
-            // Financial health metrics
-            const fcf = clubliclesMonthlyProfit * 0.8; // 20% reinvestment
-            const mrr = clubliclesMonthlyRevenue;
-            const ndr = 100 - churnRate + growthRate; // Simplified calculation
-            const quickRatio = 1.8; // Assumption
-            const burnRate = clubliclesMonthlyProfit < 0 ? clubliclesMonthlyProfit : 0;
-            const runway = burnRate < 0 ? Math.abs(investmentAmount / burnRate) : 0;
-            
-            // Rule of 40
-            const profitMargin = (clubliclesMonthlyProfit / clubliclesMonthlyRevenue) * 100;
-            const ruleOf40 = growthRate + profitMargin;
-            
-            // Update output elements
-            outputs.monthlyRevenue.textContent = formatCurrency(clubliclesMonthlyRevenue);
-            outputs.monthlyProfit.textContent = formatCurrency(clubliclesMonthlyProfit);
-            outputs.annualProfit.textContent = formatCurrency(clubliclesAnnualProfit);
-            outputs.annualROI.textContent = formatPercentage(annualROI);
-            outputs.breakEven.textContent = breakEvenYears.toFixed(1) + ' years';
-            outputs.exitValue.textContent = formatCurrency(exitStakeValue);
-            outputs.multiple.textContent = multipleOnInvestment.toFixed(1) + 'x';
-            
-            outputs.grossProfit.textContent = formatCurrency(grossProfit);
-            outputs.ebitda.textContent = formatCurrency(ebitda);
-            outputs.roe.textContent = formatPercentage(roe);
-            outputs.equityAppreciation.textContent = formatCurrency(equityAppreciation);
-            
-            outputs.ltv.textContent = formatCurrency(ltv);
-            outputs.cac.textContent = formatCurrency(cac);
-            outputs.ltvCac.textContent = ltvCacRatio.toFixed(1);
-            outputs.mrr.textContent = formatCurrency(mrr);
-            outputs.ndr.textContent = ndr.toFixed(0) + '%';
-            
-            outputs.fcf.textContent = formatCurrency(fcf);
-            outputs.quickRatio.textContent = quickRatio.toFixed(1);
-            outputs.burnRate.textContent = formatCurrency(burnRate);
-            outputs.runway.textContent = Math.floor(runway);
-            outputs.ruleOf40.textContent = ruleOf40.toFixed(0) + '%';
-            outputs.grossMargin.textContent = grossMargin.toFixed(0) + '%';
-            outputs.cacPayback.textContent = cacPayback.toFixed(1);
-            
-            // Update decision metrics styling
-            updateDecisionMetricsStyling(ltvCacRatio, cacPayback, ruleOf40, grossMargin);
-            
-            // Update chart
-            updateChart(investmentAmount, exitStakeValue, exitYear);
-        }
-        
-        // Update decision metrics styling based on values
-        function updateDecisionMetricsStyling(ltvCac, cacPayback, ruleOf40, grossMargin) {
-            // LTV/CAC Ratio
-            if (ltvCac >= 3) {
-                decisionMetrics.ltvCacMetric.className = 'decision-metric positive';
-            } else if (ltvCac >= 1) {
-                decisionMetrics.ltvCacMetric.className = 'decision-metric warning';
-            } else {
-                decisionMetrics.ltvCacMetric.className = 'decision-metric negative';
-            }
-            
-            // CAC Payback Period
-            if (cacPayback <= 12) {
-                decisionMetrics.paybackPeriodMetric.className = 'decision-metric positive';
-            } else if (cacPayback <= 18) {
-                decisionMetrics.paybackPeriodMetric.className = 'decision-metric warning';
-            } else {
-                decisionMetrics.paybackPeriodMetric.className = 'decision-metric negative';
-            }
-            
-            // Rule of 40
-            if (ruleOf40 >= 40) {
-                decisionMetrics.ruleOf40Metric.className = 'decision-metric positive';
-            } else if (ruleOf40 >= 30) {
-                decisionMetrics.ruleOf40Metric.className = 'decision-metric warning';
-            } else {
-                decisionMetrics.ruleOf40Metric.className = 'decision-metric negative';
-            }
-            
-            // Gross Margin
-            if (grossMargin >= 60) {
-                decisionMetrics.grossMarginMetric.className = 'decision-metric positive';
-            } else if (grossMargin >= 40) {
-                decisionMetrics.grossMarginMetric.className = 'decision-metric warning';
-            } else {
-                decisionMetrics.grossMarginMetric.className = 'decision-metric negative';
-            }
-        }
-        
-        // Update the chart
-        function updateChart(investment, exitValue, years) {
-            const ctx = document.getElementById('returnsChart').getContext('2d');
-            
-            // Destroy existing chart if it exists
-            if (returnsChart) {
-                returnsChart.destroy();
-            }
-            
-            // Calculate yearly values
-            const yearlyValues = [];
-            for (let i = 0; i <= years; i++) {
-                if (i === 0) {
-                    yearlyValues.push(-investment);
-                } else {
-                    // Simple compound growth for demonstration
-                    const growthRate = Math.pow(exitValue / investment, 1 / years) - 1;
-                    yearlyValues.push(investment * Math.pow(1 + growthRate, i) - investment);
-                }
-            }
-            
-            returnsChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: Array.from({length: years + 1}, (_, i) => `Year ${i}`),
-                    datasets: [{
-                        label: 'Investment Value',
-                        data: yearlyValues,
-                        borderColor: '#3498db',
-                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Value (₹)'
-                            }
-                        },
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Time'
-                            }
-                        }
-                    },
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `Value: ${formatCurrency(context.parsed.y)}`;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-        
-        // Download to Excel
-        function downloadToExcel() {
-            // Create a new workbook
-            const wb = XLSX.utils.book_new();
-            
-            // Prepare data for the sheet
-            const data = [
-                ['CLUBICLES Investor Calculator - Results'],
-                [''],
-                ['Investment Parameters', 'Value'],
-                ['Investment Amount (₹)', inputs.investmentAmount.value],
-                ['Equity Stake (%)', inputs.equityStake.value],
-                ['Pre-Money Valuation (₹)', inputs.preMoneyValuation.value],
-                ['Post-Money Valuation (₹)', inputs.postMoneyValuation.value],
-                ['Number of Hubs', inputs.numHubs.value],
-                ['Average Occupancy Rate (%)', inputs.occupancyRate.value],
-                ['Average Monthly Revenue per Hub (₹)', inputs.monthlyRevenuePerHub.value],
-                ['CLUBICLES Revenue Share (%)', inputs.revenueShare.value],
-                ['Monthly Operational Cost per Hub (₹)', inputs.monthlyOpCost.value],
-                ['Setup Cost per Hub (₹)', inputs.setupCost.value],
-                ['Customer Acquisition Cost (₹)', inputs.customerAcquisitionCost.value],
-                ['Customer Lifetime (months)', inputs.customerLifetime.value],
-                ['Monthly Churn Rate (%)', inputs.churnRate.value],
-                ['Monthly Growth Rate (%)', inputs.growthRate.value],
-                ['Exit Year', inputs.exitYear.value],
-                ['Exit Multiple', inputs.exitMultiple.value],
-                [''],
-                ['Investment Returns', 'Value'],
-                ['Pre-Money Valuation', outputs.preMoneyValDisplay.textContent],
-                ['Post-Money Valuation', outputs.postMoneyValDisplay.textContent],
-                ['Monthly Revenue (CLUBICLES)', outputs.monthlyRevenue.textContent],
-                ['Monthly Profit (CLUBICLES)', outputs.monthlyProfit.textContent],
-                ['Annual Profit (CLUBICLES)', outputs.annualProfit.textContent],
-                ['Annual ROI', outputs.annualROI.textContent],
-                ['Break-even Period', outputs.breakEven.textContent],
-                ['Exit Value of Your Stake', outputs.exitValue.textContent],
-                ['Multiple on Investment', outputs.multiple.textContent],
-                [''],
-                ['Key Decision Metrics', 'Value'],
-                ['LTV to CAC Ratio', outputs.ltvCac.textContent],
-                ['CAC Payback Period (months)', outputs.cacPayback.textContent],
-                ['Rule of 40 Score', outputs.ruleOf40.textContent],
-                ['Gross Margin', outputs.grossMargin.textContent],
-                [''],
-                ['Additional Financial Metrics', 'Value'],
-                ['Gross Profit', outputs.grossProfit.textContent],
-                ['EBITDA', outputs.ebitda.textContent],
-                ['Return on Equity', outputs.roe.textContent],
-                ['1% Equity Appreciation', outputs.equityAppreciation.textContent],
-                ['Customer LTV', outputs.ltv.textContent],
-                ['CAC', outputs.cac.textContent],
-                ['Monthly Recurring Revenue', outputs.mrr.textContent],
-                ['Net Dollar Retention', outputs.ndr.textContent],
-                ['Free Cash Flow', outputs.fcf.textContent],
-                ['Quick Ratio', outputs.quickRatio.textContent],
-                ['Burn Rate', outputs.burnRate.textContent],
-                ['Runway (months)', outputs.runway.textContent]
-            ];
-            
-            // Create worksheet
-            const ws = XLSX.utils.aoa_to_sheet(data);
-            
-            // Add worksheet to workbook
-            XLSX.utils.book_append_sheet(wb, ws, 'Investment Analysis');
-            
-            // Generate Excel file and trigger download
-            XLSX.writeFile(wb, 'CLUBICLES_Investment_Analysis.xlsx');
-        }
-        
-        // Event listeners
-        inputs.investmentAmount.addEventListener('input', calculateMetrics);
-        inputs.equityStake.addEventListener('input', calculateMetrics);
-        inputs.numHubs.addEventListener('input', calculateMetrics);
-        inputs.occupancyRate.addEventListener('input', calculateMetrics);
-        inputs.monthlyRevenuePerHub.addEventListener('input', calculateMetrics);
-        inputs.revenueShare.addEventListener('input', calculateMetrics);
-        inputs.monthlyOpCost.addEventListener('input', calculateMetrics);
-        inputs.setupCost.addEventListener('input', calculateMetrics);
-        inputs.customerAcquisitionCost.addEventListener('input', calculateMetrics);
-        inputs.customerLifetime.addEventListener('input', calculateMetrics);
-        inputs.churnRate.addEventListener('input', calculateMetrics);
-        inputs.growthRate.addEventListener('input', calculateMetrics);
-        inputs.exitYear.addEventListener('input', calculateMetrics);
-        inputs.exitMultiple.addEventListener('input', calculateMetrics);
-        
-        downloadBtn.addEventListener('click', downloadToExcel);
-        
-        // Initial calculation
+        // --- Step 1: Investment & Valuation Calculations ---
+
+        // 1. Post-Money Valuation
+        const postMoneyValuation = equityStake > 0 ? investmentAmount / equityStake : 0;
+        document.getElementById('post-money-valuation').textContent = formatRupee(postMoneyValuation);
+
+        // 2. Projected Exit Revenue (Compounded Annual Growth)
+        // Convert Monthly Growth to Annual Growth Rate (CAGR)
+        const annualGrowthRate = Math.pow(1 + monthlyGrowth, 12) - 1;
+        // Project revenue from current monthly to annual (x12) in Year 0, then compound for exitYear
+        const initialAnnualRevenue = currentRevenue * 12;
+        const projectedExitRevenue = initialAnnualRevenue * Math.pow(1 + annualGrowthRate, exitYear);
+        document.getElementById('projected-exit-revenue').textContent = formatRupee(projectedExitRevenue);
+
+        // 3. Investor Exit Value
+        const exitValuation = projectedExitRevenue * exitMultiple;
+        const investorExitValue = exitValuation * equityStake;
+        document.getElementById('investor-exit-value').textContent = formatRupee(investorExitValue);
+
+        // 4. Multiple on Investment (MOI)
+        const multipleOnInvestment = investmentAmount > 0 ? investorExitValue / investmentAmount : 0;
+        document.getElementById('multiple-on-investment').textContent = multipleOnInvestment.toFixed(1) + 'x';
+    }
+
+    // Run calculations on page load
+    document.addEventListener('DOMContentLoaded', () => {
         calculateMetrics();
-    </script>
+    });
+</script>
+
 </body>
 </html>
